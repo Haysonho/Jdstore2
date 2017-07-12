@@ -8,12 +8,12 @@ class OrdersController < ApplicationController
 
     if @order.save
 
-      current_cart.cart_item.each do |cart_item|
-        product_lists = ProductList.new
+      current_cart.cart_items.each do |cart_item|
+        product_list = ProductList.new
         product_list.order = @order
         product_list.product_name = cart_item.product.title
         product_list.product_price = cart_item.product.price
-        product.list.product_quantity = cart_item.quantity
+        product_list.quantity = cart_item.quantity
         product_list.save
       end
 
@@ -27,6 +27,24 @@ class OrdersController < ApplicationController
     @order = Order.find_by_token(params[:id])
     @product_lists = @order.product_lists
   end
+
+
+  def pay_with_alipay
+    @order = Order.find_by_token(params[:id])
+    @order.set_payment_with!("alipay")
+    @order.pay!
+
+    redirect_to order_path(@order.token), notice: "使用支付宝付款成功"
+  end
+
+  def pay_with_wechat
+    @order = Order.find_by_token(params[:id])
+    @order.set_payment_with!("wechat")
+    @order.pay!
+
+    redirect_to order_path(@order.token), notice: "使用微信付款成功"
+  end
+  
 
   private
 
